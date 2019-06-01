@@ -30,9 +30,10 @@ setuptools.setup(
     author = 'Inetlinux',
     author_email = 'lijing@inetlinux.com',
     url = 'http://github.io/inetlinux/nstools',
-    scripts=['bin/ns'],
+    scripts=['bin/ns', 'bin/ovs'],
     packages=['nstools', 'nstools.cmd', 'nstools.plugins'],
     platforms = 'OS Independent',
     license='BSD License',
     classifiers=classifiers,
+    install_requires=['netaddr', 'psutil']
 )

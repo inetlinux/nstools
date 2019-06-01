@@ -1,0 +1,4 @@
+#!/usr/bin/env python3
+
+from nstools.cmd.nstool import main
+main()

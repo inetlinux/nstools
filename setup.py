@@ -35,5 +35,5 @@ setuptools.setup(
     platforms = 'OS Independent',
     license='BSD License',
     classifiers=classifiers,
-    install_requires=['netaddr', 'psutil']
+    install_requires=['netaddr', 'psutil', 'argcomplete']
 )

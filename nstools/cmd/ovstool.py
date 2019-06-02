@@ -1,6 +1,9 @@
+# PYTHON_ARGCOMPLETE_OK
+
 import os
 import sys
 import argparse
+import argcomplete
 import importlib
 import nstools
 
@@ -13,6 +16,7 @@ def main():
         parser.print_help(sys.stderr)
         sys.exit(1)
 
+    argcomplete.autocomplete(parser)
     args = parser.parse_args()
     if args.debug:
         print(args)

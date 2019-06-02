@@ -3,7 +3,7 @@ import time
 import signal
 import psutil
 
-from nstools.cmd import shell
+from nstools.cmd import shell, shell_out
 
 def main(args, cfg):
     processes = ['dnsmasq', 'dhclient', 'zebra', 'vtysh', 'ospfd']
@@ -22,3 +22,7 @@ def main(args, cfg):
 
     shell('rm -f /tmp/*.leases')
     shell('ip --all netns delete')
+
+    out = shell_out('ovs-vsctl list-br')
+    for br in out.splitlines():
+        shell('ovs-vsctl del-br {0}'.format(br))

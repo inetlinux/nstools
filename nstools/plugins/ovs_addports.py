@@ -23,7 +23,8 @@ def ovs_add_allports(br):
             for ifidx in range(0, 10):
                 port = 'veth{0}-{1}'.format(ifidx, ns)
                 port_exists = os.path.exists('/sys/class/net/{0}'.format(port))
-                if port_exists and shell('ovs-vsctl add-port {0} {1} 2>/dev/null'.format(br, port)) == 0:
+                command = 'ovs-vsctl add-port {0} {1} 2>/dev/null'.format(br, port)
+                if port_exists and shell(command) == 0:
                     print("Add port {0}".format(port))
 
 def main(args, cfg):

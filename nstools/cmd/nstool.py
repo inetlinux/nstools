@@ -1,6 +1,9 @@
+# PYTHON_ARGCOMPLETE_OK
+
 import os
 import sys
 import argparse
+import argcomplete
 import importlib
 import nstools
 
@@ -21,6 +24,8 @@ def main():
         cmdline = ' '.join(sys.argv[3:])
         sys.argv[3] = cmdline
         sys.argv = sys.argv[:4]
+
+    argcomplete.autocomplete(parser)
     args = parser.parse_args()
     if args.debug:
         print(args)

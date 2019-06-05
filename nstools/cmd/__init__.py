@@ -1,4 +1,5 @@
-import six
+import os
+import shlex
 import subprocess
 
 def shell(command):
@@ -15,3 +16,7 @@ def shell_out(command):
         return ''
     except Exception as e:
         raise
+
+def execv(command):
+    args = shlex.split(command)
+    os.execvp(args[0], args)

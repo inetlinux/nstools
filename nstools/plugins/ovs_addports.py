@@ -29,5 +29,4 @@ def ovs_add_allports(br):
 
 def main(args, cfg):
     ovs_add_br(args.name)
-    if args.add_all:
-        ovs_add_allports(args.name)
+    ovs_add_allports(args.name)

@@ -51,4 +51,8 @@ def add_sub_cleanup(subparsers):
 
 def add_sub_addif(subparsers):
     sub = subparsers.add_parser('addif', help='Add interface under netns')
+    sub.add_argument('netns', type=str, help='Network namespace name')
+    sub.add_argument('-i', '--ifname', type=str, help='Virtual interface name under netns')
+    sub.add_argument('-v', '--vlan', type=str, help='Vlan sub-interface')
+    sub.add_argument('-a', '--address', type=str, help='IP address for new interface')
     sub.set_defaults(func=importlib.import_module('nstools.plugins.ns_addif').main)

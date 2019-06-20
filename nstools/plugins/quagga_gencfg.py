@@ -24,7 +24,7 @@ def get_addresses(ifname, ifindex, ns=None):
         return None
     result['mac'] = m.group(1)
 
-    for m in re.finditer('inet (([0-9]+.){3}[0-9]+)/[0-9]{1,3}', out, re.M):
+    for m in re.finditer('inet (([0-9]+.){3}[0-9]+/[0-9]{1,3})', out, re.M):
         addr = m.group(1)
         if exclude(addr): continue
         result['v4'].append(addr)
@@ -88,7 +88,7 @@ class Env():
             print('Write to {0}'.format(dest))
             return 0
 
-        mode = kwargs.get('mode', 644)
+        mode = kwargs.get('mode', 0o644)
         temp = self.env.get_template(src)
         buff = temp.render(**kwargs)
         return write_dest(dest, buff, mode)
@@ -119,4 +119,5 @@ def main(args, cfg):
         dst = '{0}/{1}'.format(router_dstdir, src)
         env.template(src, dst, cfg=cfg)
 
+    shell_out('chown -R quagga.quaggavt {0}'.format(router_dstdir))
     return 0

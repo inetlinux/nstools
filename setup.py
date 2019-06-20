@@ -1,5 +1,7 @@
+import sys
 import setuptools
 import nstools
+from pkg_resources import Requirement, resource_filename
 
 classifiers = [
     'Environment :: Console',
@@ -30,10 +32,13 @@ setuptools.setup(
     author = 'Inetlinux',
     author_email = 'lijing@inetlinux.com',
     url = 'http://github.io/inetlinux/nstools',
-    scripts=['bin/ns', 'bin/ovs'],
+    scripts=['bin/ns', 'bin/ovs', 'bin/quagga'],
+    #data_files=[('share/nstools/templates', 'usr/local/share/nstools/templates/zebra.conf'),
+    #            ('share/nstools/templates', 'usr/local/share/nstools/templates/ospfd.conf')],
     packages=['nstools', 'nstools.cmd', 'nstools.plugins'],
+    package_data={'nstools': ['templates/*.conf']},
     platforms = 'OS Independent',
     license='BSD License',
     classifiers=classifiers,
-    install_requires=['netaddr', 'psutil', 'argcomplete']
+    install_requires=['netaddr', 'psutil', 'jinja2', 'argcomplete']
 )

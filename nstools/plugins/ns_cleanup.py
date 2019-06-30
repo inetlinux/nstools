@@ -35,6 +35,7 @@ def main(args, cfg):
 
     shell('rm -f /tmp/*.leases')
     shell('ip --all netns delete')
+    shell('docker rm -vf faucet')
 
     # Delete all ovs bridge
     out = shell_out('ovs-vsctl list-br')

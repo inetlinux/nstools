@@ -32,9 +32,7 @@ setuptools.setup(
     author = 'Inetlinux',
     author_email = 'lijing@inetlinux.com',
     url = 'http://github.io/inetlinux/nstools',
-    scripts=['bin/ns', 'bin/nsexec', 'bin/ovs', 'bin/quagga']
-    #data_files=[('share/nstools/templates', 'usr/local/share/nstools/templates/zebra.conf'),
-    #            ('share/nstools/templates', 'usr/local/share/nstools/templates/ospfd.conf')],
+    scripts=['bin/ns', 'bin/nsexec', 'bin/ovs', 'bin/quagga'],
     packages=['nstools', 'nstools.plugins', 'nstools.cmd'],
     package_data={'nstools': ['templates/*.conf']},
     platforms = 'OS Independent',

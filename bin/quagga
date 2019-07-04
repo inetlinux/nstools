@@ -1,5 +1,24 @@
 #!/usr/bin/env python3
 # PYTHON_ARGCOMPLETE_OK
 
-from nstools.cmd.quaggatool import main
-main()
+import os
+import sys
+import argparse
+import argcomplete
+import importlib
+import nstools
+
+def add_sub_gencfg(subparsers):
+    sub = subparsers.add_parser('gencfg', help='Generate configurations for Quagga router')
+    sub.add_argument("--input-area", action='store_true')
+    sub.add_argument('router', type=str, help='router name')
+    sub.add_argument('daemon', type=str, nargs='+', help='specific daemon name', choices=['vtysh', 'ospfd', 'zebra'])
+    sub.set_defaults(func=importlib.import_module('nstools.plugins.quagga_gencfg').main)
+
+parser = argparse.ArgumentParser()
+parser.add_argument("-d", "--debug", action='store_true')
+subparsers = parser.add_subparsers(help='sub-command help')
+add_sub_gencfg(subparsers)
+argcomplete.autocomplete(parser, always_complete_options='long')
+args = parser.parse_args()
+sys.exit(args.func(args, None))

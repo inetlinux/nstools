@@ -1,5 +1,39 @@
 #!/usr/bin/env python3
 # PYTHON_ARGCOMPLETE_OK
 
-from nstools.cmd.nstool import main
-main()
+import os
+import sys
+import argparse
+import argcomplete
+import importlib
+import nstools
+
+def add_sub_create(subparsers):
+    sub = subparsers.add_parser('create', help='Create netns')
+    sub.add_argument('name', type=str)
+    sub.add_argument('-n', '--ifcount', type=int, default=1, help='interface count')
+    sub.add_argument('-a', '--address', type=str, nargs='+', help='interface address')
+    sub.set_defaults(func=importlib.import_module('nstools.plugins.ns_create').main)
+
+def add_sub_cleanup(subparsers):
+    sub = subparsers.add_parser('cleanup', help='Cleanup network experiment environments')
+    sub.set_defaults(func=importlib.import_module('nstools.plugins.ns_cleanup').main)
+
+def add_sub_addif(subparsers):
+    sub = subparsers.add_parser('addif', help='Add interface under netns')
+    sub.add_argument('netns', type=str, help='Network namespace name')
+    sub.add_argument('-i', '--ifname', type=str, help='Virtual interface name under netns')
+    sub.add_argument('-v', '--vlan', type=str, help='Vlan sub-interface')
+    sub.add_argument('-a', '--address', type=str, help='IP address for new interface')
+    sub.set_defaults(func=importlib.import_module('nstools.plugins.ns_addif').main)
+
+parser = argparse.ArgumentParser()
+parser.add_argument("-d", "--debug", action='store_true')
+subparsers = parser.add_subparsers(help='sub-command help')
+add_sub_create(subparsers)
+add_sub_cleanup(subparsers)
+add_sub_addif(subparsers)
+
+argcomplete.autocomplete(parser, always_complete_options='long')
+args = parser.parse_args()
+sys.exit(args.func(args, None))

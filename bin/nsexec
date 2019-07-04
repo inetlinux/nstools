@@ -1,0 +1,23 @@
+#!/usr/bin/env python3
+# PYTHON_ARGCOMPLETE_OK
+
+import os
+import sys
+import argparse
+import argcomplete
+from nstools.common import build_netns_map
+
+nsmap = build_netns_map()
+if len(nsmap) == 0:
+    print('No network namespace')
+    sys.exit(1)
+
+parser = argparse.ArgumentParser()
+parser.add_argument("netns", choices=nsmap.values())
+parser.add_argument("cmd")
+parser.add_argument("args", nargs='+')
+argcomplete.autocomplete(parser, always_complete_options='long', exclude=['--help'])
+
+args, unknown = parser.parse_known_args()
+
+os.execvp('ip', ['ip', 'netns', 'exec', args.netns] + sys.argv[2:])

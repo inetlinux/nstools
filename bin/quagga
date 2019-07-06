@@ -10,7 +10,9 @@ import nstools
 
 def add_sub_gencfg(subparsers):
     sub = subparsers.add_parser('gencfg', help='Generate configurations for Quagga router')
-    sub.add_argument("--input-area", action='store_true')
+
+    sub.add_argument('-A', '--default-area', default='0')
+    sub.add_argument('-P', '--passive-interface', help='Set passive interface for ospf interface')
     sub.add_argument('router', type=str, help='router name')
     sub.add_argument('daemon', type=str, nargs='+', help='specific daemon name', choices=['vtysh', 'ospfd', 'zebra'])
     sub.set_defaults(func=importlib.import_module('nstools.plugins.quagga_gencfg').main)

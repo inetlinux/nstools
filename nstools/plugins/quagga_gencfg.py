@@ -100,13 +100,15 @@ def main(args, cfg):
         os.mkdir(router_dstdir)
 
     env = Env()
-    cfg = {'router': router, 'interfaces': [], 'route': []}
+    cfg = {'router': router, 'interfaces': [], 'route': [], 'ospf': {}}
+
+
+    if args.passive_interface:
+        cfg['ospf']['passive_interface'] = args.passive_interface
 
     connected_route = get_connected_networks(args.router)
     for r in connected_route:
-        r['area'] = '0'
-        if args.input_area:
-            r['area'] = input('Input area for {}: '.format(r['prefix']))
+        r['area'] = args.default_area
         cfg['route'].append(r)
 
     ifmap = get_ifaddr_map(args.router)

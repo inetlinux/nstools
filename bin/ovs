@@ -8,6 +8,17 @@ import argcomplete
 import importlib
 import nstools
 
+from collections import namedtuple
+
+RIPair = namedtuple('RIPair', ['router', 'ifname'])
+
+def router_iface():
+    class RIAction(argparse.Action):
+        def __call__(self, parser, args, values, option_string=None):
+            setattr(args, self.dest, RIPair(values[0], values[1]))
+    return RIAction
+
+
 def add_sub_addports(subparsers):
     sub = subparsers.add_parser('addports', help='Add all available ports to one ovs bridge')
     sub.add_argument('--name', '-n', type=str, default='br0', help='bridge name')
@@ -20,11 +31,20 @@ def add_sub_setport(subparsers):
     sub.add_argument('--tags', '-t', nargs='+', type=str, help='vlan trunk premit tags')
     sub.set_defaults(func=importlib.import_module('nstools.plugins.ovs_setport').main)
 
+def add_sub_bridge_routers(subparsers):
+    sub = subparsers.add_parser('bridge-routers', help="Bridging 2 router's interface with ovs bridge")
+    sub.add_argument("src", metavar=('router', 'ifname'), nargs=2, action=router_iface())
+    sub.add_argument("dst", metavar=('router', 'ifname'),
+                     nargs=2, action=router_iface())
+    sub.set_defaults(func=importlib.import_module('nstools.plugins.ovs_bridge_ro').main)
+
+
 parser = argparse.ArgumentParser()
 parser.add_argument("-d", "--debug", action='store_true')
 subparsers = parser.add_subparsers(help='sub-command help')
 add_sub_addports(subparsers)
 add_sub_setport(subparsers)
+add_sub_bridge_routers(subparsers)
 
 argcomplete.autocomplete(parser, always_complete_options='long')
 args = parser.parse_args()

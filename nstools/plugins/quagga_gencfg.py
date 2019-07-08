@@ -3,6 +3,7 @@
 
 import os
 import re
+from netaddr import IPNetwork
 from jinja2 import Environment, FileSystemLoader
 from nstools.cmd import shell_out
 
@@ -18,7 +19,7 @@ def get_addresses(ifname, ifindex, ns=None):
     cmd = 'ip netns exec {0} {1}'.format(ns, cmd) if ns else cmd
     out = shell_out(cmd)
 
-    result = {'index': ifindex,  'v4': [], 'v6': []}
+    result = {'index': ifindex,  'v4': [], 'v4network': [], 'v6': [], 'v6network': []}
     m = re.search('link/ether ((\w{2}:){5}\w{2})', out)
     if not m:
         return None
@@ -28,11 +29,15 @@ def get_addresses(ifname, ifindex, ns=None):
         addr = m.group(1)
         if exclude(addr): continue
         result['v4'].append(addr)
+        nw = IPNetwork(addr)
+        result['v4network'].append({'prefix': str(nw.cidr)})
 
     for m in re.finditer('inet6 (.+)/[0-9]{1,3}', out, re.M):
         addr = m.group(1)
         if exclude(addr): continue
         result['v6'].append(addr)
+        nw = IPNetwork(addr)
+        result['v6network'].append({'prefix': str(nw.cidr)})
 
     return result
 
@@ -60,6 +65,8 @@ def get_ifaddr_map(ns = None):
 
     return result
 
+
+"""
 def get_connected_networks(ns = None):
     cmd = 'ip ro show'
     cmd = 'ip netns exec {0} {1}'.format(ns, cmd) if ns else cmd
@@ -70,6 +77,7 @@ def get_connected_networks(ns = None):
         route4.append({'prefix': x.group(1), 'scope': 'link'})
 
     return route4
+"""
 
 class Env():
     def __init__(self):
@@ -100,26 +108,39 @@ def main(args, cfg):
         os.mkdir(router_dstdir)
 
     env = Env()
-    cfg = {'router': router, 'interfaces': [], 'route': [], 'ospf': {}}
+    cfg = {'router': router}
 
+    #cfg['ospf']['passive_interfaces'] = args.passive_interfaces if args.passive_interfaces else []
 
-    if args.passive_interface:
-        cfg['ospf']['passive_interface'] = args.passive_interface
-
+    """
     connected_route = get_connected_networks(args.router)
     for r in connected_route:
         r['area'] = args.default_area
+        if args.network_areamap and r['prefix'] in args.network_areamap:
+            r['area'] = args.default_area
         cfg['route'].append(r)
 
-    ifmap = get_ifaddr_map(args.router)
-    for k,v in ifmap.items():
-        v4ent = {'name': k, 'v4': v['v4']}
-        cfg['interfaces'].append(v4ent)
+    """
+
+    cfg['ifmap'] = get_ifaddr_map(args.router)
+    for k, v in cfg['ifmap'].items():
+        v['attrs'] = {}
+        if args.interface_attributes and k in args.interface_attributes:
+            attributes = args.interface_attributes.get(k)
+            for attr in attributes:
+                if attr == 'passive':
+                    v['attrs']['passive'] = True
+                elif attr == 'point-to-point':
+                    v['attrs']['ospf_network'] = 'point-to-point'
+        for n in v['v4network']:
+            n['area'] = args.default_area
+            if args.network_areamap and n['prefix'] in args.network_areamap:
+                n['area'] = args.network_areamap.get(n['prefix'])
 
     for daemon in args.daemon:
         src = '{0}.conf'.format(daemon)
         dst = '{0}/{1}'.format(router_dstdir, src)
-        env.template(src, dst, cfg=cfg)
+        env.template(src, dst, router=router, cfg=cfg)
 
     shell_out('chown -R quagga.quaggavt {0}'.format(router_dstdir))
     return 0

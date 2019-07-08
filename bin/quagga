@@ -7,20 +7,62 @@ import argparse
 import argcomplete
 import importlib
 import nstools
+from nstools.common import build_netns_map
+
+nsmap, names = build_netns_map()
+
+def network_area_map():
+    class NAMAction(argparse.Action):
+        def __call__(self, parser, args, values, option_string=None):
+            dest = getattr(args, self.dest)
+            if dest is None:
+                dest = {values[0]: values[1]}
+            else:
+                dest[values[0]] = values[1]
+            setattr(args, self.dest, dest)
+    return NAMAction
+
+def interface_attr():
+    class IAAction(argparse.Action):
+        def __call__(self, parser, args, values, option_string=None):
+            dest = getattr(args, self.dest)
+            if dest is None:
+                dest = {values[0]: values[1].split(',')}
+            else:
+                dest[values[0]] = values[1].split(',')
+            setattr(args, self.dest, dest)
+    return IAAction
 
 def add_sub_gencfg(subparsers):
     sub = subparsers.add_parser('gencfg', help='Generate configurations for Quagga router')
 
     sub.add_argument('-A', '--default-area', default='0')
-    sub.add_argument('-P', '--passive-interface', help='Set passive interface for ospf interface')
-    sub.add_argument('router', type=str, help='router name')
+    sub.add_argument("-NA", "--network-areamap", metavar=('network', 'area'),
+                     nargs=2, action=network_area_map())
+    sub.add_argument("-IA", "--interface-attributes", metavar=('ifname', 'attr'),
+                     nargs=2, action=interface_attr())
+    sub.add_argument('router', type=str, help='router name', choices=names)
     sub.add_argument('daemon', type=str, nargs='+', help='specific daemon name', choices=['vtysh', 'ospfd', 'zebra'])
     sub.set_defaults(func=importlib.import_module('nstools.plugins.quagga_gencfg').main)
 
+def add_sub_setif(subparsers):
+    sub = subparsers.add_parser('set-interface', help='Set interface parameters')
+    sub.add_argument('router', type=str, help='router name', choices=names)
+    sub.add_argument('ifname', type=str, help='interface name')
+    sub.add_argument('args', type=str, nargs='+', help='command line')
+    sub.set_defaults(func=importlib.import_module('nstools.plugins.quagga_set_interface').main)
+
+def add_sub_setospf(subparsers):
+    sub = subparsers.add_parser('set-ospf', help='Set ospf router parameters')
+    sub.add_argument('router', type=str, help='router name', choices=names)
+    sub.add_argument('args', type=str, nargs='+', help='command line')
+    sub.set_defaults(func=importlib.import_module('nstools.plugins.quagga_set_ospf').main)
+
 parser = argparse.ArgumentParser()
-parser.add_argument("-d", "--debug", action='store_true')
 subparsers = parser.add_subparsers(help='sub-command help')
 add_sub_gencfg(subparsers)
+add_sub_setif(subparsers)
+add_sub_setospf(subparsers)
 argcomplete.autocomplete(parser, always_complete_options='long')
 args = parser.parse_args()
 sys.exit(args.func(args, None))

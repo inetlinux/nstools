@@ -8,7 +8,7 @@ from nstools.cmd import shell, shell_out
 
 def main(args, cfg):
     # Terminate processes
-    processes = ['dnsmasq', 'zebra', 'vtysh', 'ospfd']
+    processes = ['dnsmasq', 'zebra', 'vtysh', 'ospfd', 'bgpd']
     for p in psutil.process_iter(attrs=['name', 'pid']):
         if p.info['name'] in processes:
             print(p.info);
@@ -32,6 +32,12 @@ def main(args, cfg):
             except Exception as e:
                 print(e)
             os.unlink(dh)
+
+    for pn in glob.glob('/sys/class/net/veth*'):
+        if not os.path.exists(pn):
+            continue
+        bn = os.path.basename(pn)
+        shell('ip link del {0}'.format(bn))
 
     shell('rm -f /tmp/*.leases')
     shell('ip --all netns delete')

@@ -8,7 +8,7 @@ def ovs_add_br(br):
         shell('ovs-vsctl add-br {0}'.format(br))
 
 def ovs_add_allports(br):
-    nsmap = build_netns_map()
+    nsmap, _ = build_netns_map()
 
     for i in range(1, 16):
         netns_names = [
